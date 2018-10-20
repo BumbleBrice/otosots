@@ -5,11 +5,12 @@
 
   function trie($photo)
   {
+    $img = $photo;
     $photo = explode(' ', $photo);
     $lat = $photo[0];
     $lng = $photo[1];
     $ent = explode('.', join(' ', array_slice($photo, 2)))[0];
-    return ['lat' => $lat, 'lng' => $lng, 'ent' => $ent];
+    return ['lat' => $lat, 'lng' => $lng, 'ent' => $ent, 'img' => $img];
   }
 ?>
 <!DOCTYPE html>
@@ -39,54 +40,53 @@
       }
     </style>
     <script>
-
-    // This example displays a marker at the center of Australia.
-    // When the user clicks the marker, an info window opens.
-
-    function initMap() {
-      var uluru = {lat: -25.363, lng: 131.044};
-      var map = new google.maps.Map(document.getElementById('map'), {
-        zoom: 4,
-        center: uluru
-      });
-
-      var contentString = '<div id="content">'+
-          '<div id="siteNotice">'+
-          '</div>'+
-          '<h1 id="firstHeading" class="firstHeading">Uluru</h1>'+
-          '<div id="bodyContent">'+
-          '<p> azeazeazeazeazeazeazeaeazeaeaez </p>'+
-          '<p>Attribution: Uluru, <a href="https://en.wikipedia.org/w/index.php?title=Uluru&oldid=297882194">'+
-          'https://en.wikipedia.org/w/index.php?title=Uluru</a> '+
-          '(last visited June 22, 2009).</p>'+
-          '</div>'+
-          '</div>';
-
-      var infowindow = new google.maps.InfoWindow({
-        content: contentString
-      });
-
-      var marker = new google.maps.Marker({
-        position: uluru,
-        map: map,
-        title: 'Uluru (Ayers Rock)'
-      });
-      marker.addListener('click', function() {
-        infowindow.open(map, marker);
-      });
-    }
-    </script>
-    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBF87DmvYXqVVDCaNriE2Qfhob3bqDVhtU&callback=initMap"></script>
-    <!-- <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBF87DmvYXqVVDCaNriE2Qfhob3bqDVhtU"></script>
-    <script src="markers.js" defer></script>
-    <script defer>
-      function drawpoints()
+      function initMap() 
       {
-        <?php foreach($photos as $key => $photo): ?>
-          let points<?=$key?> = new points(new google.maps.LatLng(<?=$photo['lat']?>, <?=$photo['lng']?>), map, '<?=$photo['ent']?>')
-        <?php endforeach; ?>
+          var map = new google.maps.Map(document.getElementById('map'),
+          {
+              zoom: 6.3,
+              center: {lat: 46, lng: 2},
+              mapTypeId: 'roadmap'
+          });
+
+          // geo
+          var options = {
+              enableHighAccuracy: true,
+              timeout: 5000,
+              maximumAge: 0
+          };
+          
+          function success(pos) {
+              var crd = pos.coords;
+              map.setCenter({lat: crd.latitude, lng: crd.longitude})
+              map.setZoom(14)
+          };
+          
+          function error(err) {
+              console.warn(`ERROR(${err.code}): ${err.message}`);
+          };
+          
+          navigator.geolocation.getCurrentPosition(success, error, options);
+          // /geo
+          
+          var markers = []
+
+          <?php foreach($photos as $key => $photo): ?>
+
+            content = '<h1><?=$photo['ent']?></h1><br><img src="annonces/<?=$photo['img']?>">'
+
+            var infowindow<?=$key?> = new google.maps.InfoWindow({content: content});
+            var marker<?=$key?> = new google.maps.Marker({position: {lat: <?=$photo['lat']?>, lng: <?=$photo['lng']?>}, map: map, title: '<?=$photo['ent']?>'});
+            marker<?=$key?>.addListener('click', function() { infowindow<?=$key?>.open(map, marker<?=$key?>);});
+            markers.push(marker<?=$key?>)
+          <?php endforeach; ?>
+        
+          var markerCluster = new MarkerClusterer(map, markers, {imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'});
+
       }
-    </script> -->
+    </script>
+    <script src="https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/markerclusterer.js"></script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBF87DmvYXqVVDCaNriE2Qfhob3bqDVhtU&callback=initMap"></script>
   </head>
   <body>
     <div id="map"></div>
