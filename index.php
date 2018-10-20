@@ -20,76 +20,67 @@
     <meta charset="utf-8">
     <title>Maps</title>
     <style>
-      /* Always set the map height explicitly to define the size of the div
-       * element that contains the map. */
       #map {
         width: 900px;
         height: 900px;
         margin: 0 auto;
       }
-      .div_custom
-      {
-          border-style: none;
-          border-width: 25px;
-          position: absolute;
-          background-color: red;
-          width: 110px;
-          height: 30px;
-          font-size: 20px;
-          white-space: nowrap;
-      }
     </style>
-    <script>
-      function initMap() 
-      {
-          var map = new google.maps.Map(document.getElementById('map'),
-          {
-              zoom: 6.3,
-              center: {lat: 46, lng: 2},
-              mapTypeId: 'roadmap'
-          });
-
-          // geo
-          var options = {
-              enableHighAccuracy: true,
-              timeout: 5000,
-              maximumAge: 0
-          };
-          
-          function success(pos) {
-              var crd = pos.coords;
-              map.setCenter({lat: crd.latitude, lng: crd.longitude})
-              map.setZoom(14)
-          };
-          
-          function error(err) {
-              console.warn(`ERROR(${err.code}): ${err.message}`);
-          };
-          
-          navigator.geolocation.getCurrentPosition(success, error, options);
-          // /geo
-          
-          var markers = []
-
-          <?php foreach($photos as $key => $photo): ?>
-
-            content = '<h1><?=$photo['ent']?></h1><br><img src="annonces/<?=$photo['img']?>">'
-
-            var infowindow<?=$key?> = new google.maps.InfoWindow({content: content});
-            var marker<?=$key?> = new google.maps.Marker({position: {lat: <?=$photo['lat']?>, lng: <?=$photo['lng']?>}, map: map, title: '<?=$photo['ent']?>'});
-            marker<?=$key?>.addListener('click', function() { infowindow<?=$key?>.open(map, marker<?=$key?>);});
-            markers.push(marker<?=$key?>)
-          <?php endforeach; ?>
-        
-          var markerCluster = new MarkerClusterer(map, markers, {imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'});
-
-      }
-    </script>
-    <script src="https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/markerclusterer.js"></script>
-    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBF87DmvYXqVVDCaNriE2Qfhob3bqDVhtU&callback=initMap"></script>
   </head>
   <body>
     <div id="map"></div>
     <a href="add.php">Ajouter une photo</a>
+
+	<script src="https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/markerclusterer.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBF87DmvYXqVVDCaNriE2Qfhob3bqDVhtU"></script>
+    <script>
+		let map = new google.maps.Map(document.getElementById('map'),
+		{
+			zoom: 6.3,
+			center: {lat: 46, lng: 2},
+			mapTypeId: 'satellite'
+		});
+
+		// geo		
+		navigator.geolocation.getCurrentPosition(
+		pos => 
+		{
+			let crd = pos.coords;
+			map.setCenter({lat: crd.latitude, lng: crd.longitude})
+			map.setZoom(14)
+		},
+		error => console.warn(`ERROR(${error.code}): ${error.message}`), 
+		{
+			enableHighAccuracy: true,
+			timeout: 5000,
+			maximumAge: 0
+		});
+		// /geo
+
+		let info_markers = 
+		[
+			<?php foreach($photos as $key => $photo): ?>
+			{lat: <?=$photo['lat']?>, lng: <?=$photo['lng']?>, ent: '<?=$photo['ent']?>', img: '<?=$photo['img']?>'},
+			<?php endforeach; ?>
+		]
+		console.table(info_markers)
+		
+		markers = info_markers.map(marker =>
+		{
+
+			return new google.maps.Marker({position: {lat: marker.lat, lng: marker.lng}, map: map, title: marker.ent})
+		})
+
+		markers.forEach((marker, index) =>
+		{	
+			marker.addListener('click', function() 
+			{ 
+				let content = `<h1>${info_markers[index].ent}</h1><br><img src="annonces/${info_markers[index].img}">`
+				new google.maps.InfoWindow({content: content}).open(map, marker)
+			})
+		})
+
+		new MarkerClusterer(map, markers, {imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'});
+    </script>
   </body>
 </html>
