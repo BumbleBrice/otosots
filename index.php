@@ -1,4 +1,9 @@
 <?php
+  if(!file_exists('annonces'))
+  {
+    mkdir('annonces', 0777, true);
+  }
+
   $fichiers = array_slice(scandir('annonces'), 2);
 
   $photos = array_map("trie", $fichiers);
