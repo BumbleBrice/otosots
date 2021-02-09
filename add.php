@@ -1,10 +1,15 @@
 <?php
-    if(!empty($_POST))
-    {
-        $decoded=base64_decode(explode(',', $_POST['photo'])[1]);
-        file_put_contents('annonces/'.$_POST['positions'].' '.$_POST['entreprise'].'.png',$decoded);
-        die('ok');   
-    }
+if(!empty($_POST))
+{
+  if(!file_exists('annonces'))
+  {
+    mkdir('annonces', 0777, true);
+  }
+  
+  $decoded=base64_decode(explode(',', $_POST['photo'])[1]);
+  file_put_contents('annonces/'.$_POST['positions'].' '.$_POST['entreprise'].'.png',$decoded);
+  die('ok');   
+}
 ?>
 <!DOCTYPE html>
 <html>
